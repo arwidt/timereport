@@ -13,9 +13,9 @@ var _timer = (function() {
     var _outputTime = function(m) {
         switch(true) {
             case (m < 1000):
-                return m + "ms";
+                return m + " ms";
             case (m > 1000 && m < 60000):
-                return m/1000 + "s";
+                return m/1000 + " s";
             case (m > 60000 && m < 60000*60):
                 return m;
         }
@@ -50,9 +50,14 @@ var _timer = (function() {
     };
 
     var _inst = {
+        public_scope: {
+            groups: _groups, 
+            getTimer: _getTimer,
+            outputTime: _outputTime
+        },
         createGroup: function(id) {
             if (_groups.hasOwnProperty(id)) {
-                console.log(id + ' is taken as a groupId, please use another!');
+                console.warn(id + ' is taken as a groupId, please use another!');
                 return;
             }
             _groups[id] = {
@@ -92,7 +97,7 @@ var _timer = (function() {
             for (var i = 0, len = timers.length; i < len; i++) {
                 if (timers[i].opts().id === timerId) {
                     timers[i].stop();
-                    return;
+                    return this;
                 }
             }
         }
