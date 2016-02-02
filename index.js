@@ -10,14 +10,16 @@ var _timer = (function() {
         timers: []
     };
         
-    var _outputTime = function(m) {
+    var _outputTime = function(t) {
         switch(true) {
-            case (m < 1000):
-                return m + " ms";
-            case (m > 1000 && m < 60000):
-                return m/1000 + " s";
-            case (m > 60000 && m < 60000*60):
-                return m;
+            case (t < 1000):
+                return t + " ms";
+            case (t > 1000 && t < 60000):
+                return t/1000 + " s";
+            case (t > 60000 && t < 60000*60):
+                return ~~(t/60000) + " m" + " and " + t%60000/1000 + " s";
+            case (t >= 60000*60):
+                return "looong time!";
         }
     };
 
@@ -58,7 +60,7 @@ var _timer = (function() {
         createGroup: function(id) {
             if (_groups.hasOwnProperty(id)) {
                 console.warn(id + ' is taken as a groupId, please use another!');
-                return;
+                return this;
             }
             _groups[id] = {
                 id: id,
