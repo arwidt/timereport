@@ -79,9 +79,18 @@ var _timer = (function() {
 
             return this;
         },
+        
+        flushAll: function() {
+            console.log("Flush all groups and timers");
+            _groups = [];
+        },
 
         startTimer: function(timerId, groupId) {
             console.log("startTimer:", timerId, groupId);
+            if (!_groups.hasOwnProperty(groupId)) {
+                _inst.createGroup(groupId);
+            }
+
             var timer = _getTimer({
                 id: timerId,
                 startTime: now(),
