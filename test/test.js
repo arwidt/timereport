@@ -87,4 +87,11 @@ describe('TimeReport.js', function() {
 
     });
 
+    describe('Prints', function() {
+        it('should print the output in a nice way', function() {
+           timereport.outputGroup('group1').print(); 
+           timereport.outputGroup('group1')
+        });
+    });
+
 });

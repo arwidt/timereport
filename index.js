@@ -9,6 +9,7 @@ var _timer = (function() {
         id: 'default',
         timers: []
     };
+    var _groupBuffer;
         
     var _outputTime = function(t) {
         switch(true) {
@@ -57,6 +58,7 @@ var _timer = (function() {
             getTimer: _getTimer,
             outputTime: _outputTime
         },
+
         createGroup: function(id) {
             if (_groups.hasOwnProperty(id)) {
                 console.warn(id + ' is taken as a groupId, please use another!');
@@ -69,8 +71,23 @@ var _timer = (function() {
             return this;
         },
 
+        outputGroup: function(groupId) {
+            var timers = _groups[groupId || "default"].timers;
+            _groupBuffer = timers;
+            return this;
+        },
+
+        print: function() {
+            if (_groupBuffer) {
+               for (var i = 0, len = _groupBuffer.length; i < len; i++) {
+                    _groupBuffer[i].print();
+
+               } 
+            } 
+        },
+
         printGroup: function(groupId) {
-            console.log("printGroup:");
+            console.log("printGroup:", groupId);
 
             var timers = _groups[groupId || "default"].timers;
             for (var i = 0, len = timers.length; i < len; i++) {
