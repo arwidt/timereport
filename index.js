@@ -1,6 +1,5 @@
 
 var colors = require('colors');
-var now = require('performance-now');
 
 var _timer = (function() {
 
@@ -9,7 +8,7 @@ var _timer = (function() {
         id: 'default',
         timers: []
     };
-    var _groupBuffer;
+    //var _groupBuffer;
         
     var _outputTime = function(t) {
         switch(true) {
@@ -24,20 +23,65 @@ var _timer = (function() {
         }
     };
 
+    var _outputProgress = function(id, perc, time) {
+
+        var str = " " + id + ": ";
+        str += (Array(Math.round(30*perc)).join(" ")).black.bgWhite;
+        str += " " + Math.round(perc*100) + "%";
+        str += " " +  _outputTime(time);
+
+        //(Array(Math.round(30*perc)).join(b)).black.bgWhite
+
+        console.log(str);
+    };
+
+    var _now = (function() {
+        var getNanoSeconds, hrtime, loadTime;
+
+        if ((typeof performance !== "undefined" && performance !== null) && performance.now) {
+            return function() {
+                return performance.now();
+            };
+        } else if ((typeof process !== "undefined" && process !== null) && process.hrtime) {
+
+            hrtime = process.hrtime;
+            getNanoSeconds = function() {
+                var hr;
+                hr = hrtime();
+                return hr[0] * 1e9 + hr[1];
+            };
+            loadTime = getNanoSeconds();
+            return function() {
+                return (getNanoSeconds() - loadTime) / 1e6;
+            };
+        } else if (Date.now) {
+            loadTime = Date.now();
+            return function() {
+                return Date.now() - loadTime;
+            };
+        } else {
+            loadTime = new Date().getTime();
+            return function() {
+                return new Date().getTime() - loadTime;
+            };
+        }
+
+    })();
+
     var _getTimer = function(_opts) {
         var _opts = _opts || {};
         var _inst = {
-            opts: function() {
+            get opts() {
                 return _opts;
             },
             start: function() {
-                _opts.startTime = now();
+                _opts.startTime = _now();
             },
             stop: function() {
-                _opts.endTime = now();
-                _opts.totalTime = (_opts.startTime - _opts.endTime).toFixed(3);
+                _opts.endTime = _now();
+                _opts.totalTime = ~(_opts.startTime - _opts.endTime).toFixed(3);
             },
-            getTime: function() {
+            get time() {
                 if (_opts.endTime) {
                     return _opts.totalTime;
                 } else {
@@ -54,6 +98,7 @@ var _timer = (function() {
 
     var _inst = {
         public_scope: {
+            now: _now,
             groups: _groups, 
             getTimer: _getTimer,
             outputTime: _outputTime
@@ -61,7 +106,7 @@ var _timer = (function() {
 
         createGroup: function(id) {
             if (_groups.hasOwnProperty(id)) {
-                console.warn(id + ' is taken as a groupId, please use another!');
+                //console.warn(id + ' is taken as a groupId, please use another!');
                 return this;
             }
             _groups[id] = {
@@ -71,46 +116,59 @@ var _timer = (function() {
             return this;
         },
 
-        outputGroup: function(groupId) {
-            var timers = _groups[groupId || "default"].timers;
-            _groupBuffer = timers;
-            return this;
-        },
-
-        print: function() {
-            if (_groupBuffer) {
-               for (var i = 0, len = _groupBuffer.length; i < len; i++) {
-                    _groupBuffer[i].print();
-
-               } 
-            } 
-        },
+        //outputGroup: function(groupId) {
+        //    var timers = _groups[groupId || "default"].timers;
+        //    _groupBuffer = timers;
+        //    return this;
+        //},
+        //
+        //print: function() {
+        //    if (_groupBuffer) {
+        //       for (var i = 0, len = _groupBuffer.length; i < len; i++) {
+        //            _groupBuffer[i].print();
+        //
+        //       }
+        //    }
+        //},
 
         printGroup: function(groupId) {
-            console.log("printGroup:", groupId);
+            //console.log("printGroup:", groupId);
 
-            var timers = _groups[groupId || "default"].timers;
+            var timers = _groups[groupId || "default"].timers,
+                total = 0;
+
             for (var i = 0, len = timers.length; i < len; i++) {
-                timers[i].print();
+                //timers[i].print();
+                //console.log(timers[i]);
+                total += timers[i].time;
             }
+
+            _outputProgress("Total", 1, total);
+
+            for (i = 0, len = timers.length; i < len; i++) {
+                timers[i].opts.perc = timers[i].time / total;
+                _outputProgress(timers[i].opts.id, timers[i].opts.perc, timers[i].time);
+            }
+
+
 
             return this;
         },
-        
-        flushAll: function() {
-            console.log("Flush all groups and timers");
+
+        flush: function() {
+            //console.log("Flush all groups and timers");
             _groups = [];
         },
 
         startTimer: function(timerId, groupId) {
-            console.log("startTimer:", timerId, groupId);
+            //console.log("startTimer:", timerId, groupId);
             if (!_groups.hasOwnProperty(groupId)) {
                 _inst.createGroup(groupId);
             }
 
             var timer = _getTimer({
                 id: timerId,
-                startTime: now(),
+                startTime: _now(),
                 endTime: null,
                 totalTime: null
             });
@@ -120,10 +178,10 @@ var _timer = (function() {
         },
 
         endTimer: function(timerId, groupId) {
-            console.log("endTimer:", timerId);
+            //console.log("endTimer:", timerId);
             var timers = _groups[groupId || "default"].timers;
             for (var i = 0, len = timers.length; i < len; i++) {
-                if (timers[i].opts().id === timerId) {
+                if (timers[i].opts.id === timerId) {
                     timers[i].stop();
                     return this;
                 }

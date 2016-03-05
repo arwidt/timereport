@@ -4,6 +4,25 @@ var timereport = require('../index.js');
 var should = require('should');
 
 describe('TimeReport.js', function() {
+
+    describe('Current time', function() {
+
+        it('should return correct time', function(done) {
+
+            var t = timereport.public_scope.now();
+            setTimeout(function() {
+                var _t = ~~(timereport.public_scope.now() - t);
+                if (_t > 990 && _t < 1010) {
+                    _t = 1000;
+                }
+                should(_t).equal(1000);
+                done();
+            }, 1000);
+
+        });
+
+    });
+
     describe('Public functions', function() {
 
         it('should return itself when running specific functions', function() {
@@ -15,7 +34,7 @@ describe('TimeReport.js', function() {
 
     });
 
-    describe('outputTime', function() {
+    describe('Output-time', function() {
 
         it('should return x ms when less then 1 s', function() {
             should(timereport.public_scope.outputTime(456)).equal("456 ms");
@@ -87,10 +106,17 @@ describe('TimeReport.js', function() {
 
     });
 
+    describe("Flush", function() {
+
+        it("Flush function should clear all groups and kill all timers.", function() {
+            //timereport.flush();
+        });
+
+    });
+
     describe('Prints', function() {
         it('should print the output in a nice way', function() {
-           timereport.outputGroup('group1').print(); 
-           timereport.outputGroup('group1')
+           timereport.printGroup('group1');
         });
     });
 
