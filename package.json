@@ -20,14 +20,14 @@
     "time",
     "tasks"
   ],
-  "author": "Arwid Thornstrom <arwidt@gmail.com> (http://thingsarerandom.com/)",
+  "author": "Arwid Thornstrom <arwidt@gmail.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/arwidt/timereport/issues"
   },
   "homepage": "https://github.com/arwidt/timereport#readme",
   "devDependencies": {
-    "mocha": "^2.4.4",
+    "mocha": "^2.4.4"
   },
   "dependencies": {
     "colors": "^1.1.2",
