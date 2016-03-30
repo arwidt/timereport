@@ -9,7 +9,50 @@ var _timer = (function() {
         timers: []
     };
     //var _groupBuffer;
-        
+    var _output = (function() {
+        var _inst = function() {
+            return {
+                output: [[]],
+
+                row: function() {
+                    this.output.push([]);
+                    return this;
+                },
+
+                col: function(s) {
+                    this.output[this.output.length-1].push(s);
+                    if (this.output.length > 1) {
+                        this.output.forEach(function(lines) {
+                            lines.forEach(function(line) {
+                                console.log(line);
+                            });
+                        });
+                    }
+                    return this;
+                },
+
+                print: function() {
+                    var str = "";
+                    this.output.forEach(function(lines) {
+                        lines.forEach(function(line, i, arr) {
+                            str += line;
+                            if (i < arr.length-1) {
+                                str += " ";
+                            }
+                        });
+                    });
+                    return str;
+                }
+            };
+        };
+
+        return {
+            create: function() {
+                return _inst();
+            }
+        };
+    })();    
+
     var _outputTime = function(t) {
         switch(true) {
             case (t < 1000):
@@ -101,7 +144,8 @@ var _timer = (function() {
             now: _now,
             groups: _groups, 
             getTimer: _getTimer,
-            outputTime: _outputTime
+            outputTime: _outputTime,
+            output: _output
         },
 
         createGroup: function(id) {
@@ -142,6 +186,16 @@ var _timer = (function() {
                 //console.log(timers[i]);
                 total += timers[i].time;
             }
+
+            var str = " " + id + ": ";
+            str += (Array(Math.round(30*perc)).join(" ")).black.bgWhite;
+            str += " " + Math.round(perc*100) + "%";
+            str += " " +  _outputTime(time);
+
+            _output.create()
+                .indent(1)
+                .line("Total:")
+                .print();
 
             _outputProgress("Total", 1, total);
 

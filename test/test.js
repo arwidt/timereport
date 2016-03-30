@@ -51,6 +51,41 @@ describe('TimeReport.js', function() {
 
     });
 
+    describe('Output', function() {
+        
+        it('should print one line', function() {
+            var o1 = timereport.public_scope.output.create();
+            o1.col("foobar");
+            should(o1.print()).equal("foobar");
+        });
+
+        it('should print two columns', function() {
+            var o2 = timereport.public_scope.output.create();
+            o2.col("foo")
+                .col("bar"); 
+            should(o2.print()).equal("foo bar");
+        });
+        
+        it('should print two rows', function() {
+            var o = timereport.public_scope.output.create();
+            o.col('123')
+                .row()
+                .col('123456');
+            should(o.print()).equal("123    \n123456"); 
+        });
+        
+        it('should handle rows when lines are different width', function() {
+            var o3 = timereport.public_scope.output.create();
+            o3.col("123")
+                .col("|")
+                .row()
+                .col("123456")
+                .col("|");
+
+            should(o3.print()).equal("123    |\n123345 |"); 
+        });
+    });
+
     describe('Groups', function() {
 
         it('should create a new group when it is not created before', function() {
@@ -99,7 +134,7 @@ describe('TimeReport.js', function() {
                 timereport.endTimer('timer3', 'group1');
 
                 should(timereport.public_scope.groups['group1'].timers.length).equal(3);
-                done(); 
+                done();
             }, 300);
 
         });
