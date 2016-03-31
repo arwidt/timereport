@@ -1,5 +1,6 @@
 
 var colors = require('colors');
+var tto = require('terminal-table-output');
 
 var _timer = (function() {
 
@@ -8,50 +9,6 @@ var _timer = (function() {
         id: 'default',
         timers: []
     };
-    //var _groupBuffer;
-    var _output = (function() {
-        var _inst = function() {
-            return {
-                output: [[]],
-
-                row: function() {
-                    this.output.push([]);
-                    return this;
-                },
-
-                col: function(s) {
-                    this.output[this.output.length-1].push(s);
-                    if (this.output.length > 1) {
-                        this.output.forEach(function(lines) {
-                            lines.forEach(function(line) {
-                                console.log(line);
-                            });
-                        });
-                    }
-                    return this;
-                },
-
-                print: function() {
-                    var str = "";
-                    this.output.forEach(function(lines) {
-                        lines.forEach(function(line, i, arr) {
-                            str += line;
-                            if (i < arr.length-1) {
-                                str += " ";
-                            }
-                        });
-                    });
-                    return str;
-                }
-            };
-        };
-
-        return {
-            create: function() {
-                return _inst();
-            }
-        };
-    })();    
 
     var _outputTime = function(t) {
         switch(true) {
@@ -155,7 +112,8 @@ var _timer = (function() {
             }
             _groups[id] = {
                 id: id,
-                timers: []
+                timers: [],
+                tto: tto.create()
             };
             return this;
         },
@@ -187,24 +145,18 @@ var _timer = (function() {
                 total += timers[i].time;
             }
 
-            var str = " " + id + ": ";
-            str += (Array(Math.round(30*perc)).join(" ")).black.bgWhite;
-            str += " " + Math.round(perc*100) + "%";
-            str += " " +  _outputTime(time);
-
-            _output.create()
-                .indent(1)
-                .line("Total:")
-                .print();
-
-            _outputProgress("Total", 1, total);
-
-            for (i = 0, len = timers.length; i < len; i++) {
-                timers[i].opts.perc = timers[i].time / total;
-                _outputProgress(timers[i].opts.id, timers[i].opts.perc, timers[i].time);
-            }
-
-
+            // var str = " " + id + ": ";
+            // str += (Array(Math.round(30*perc)).join(" ")).black.bgWhite;
+            // str += " " + Math.round(perc*100) + "%";
+            // str += " " +  _outputTime(time);
+            //
+            //
+            // _outputProgress("Total", 1, total);
+            //
+            // for (i = 0, len = timers.length; i < len; i++) {
+            //     timers[i].opts.perc = timers[i].time / total;
+            //     _outputProgress(timers[i].opts.id, timers[i].opts.perc, timers[i].time);
+            // }
 
             return this;
         },

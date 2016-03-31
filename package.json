@@ -32,6 +32,7 @@
     "should": "^8.2.2"
   },
   "dependencies": {
-    "colors": "^1.1.2"
+    "colors": "^1.1.2",
+    "terminal-table-output": "^1.0.0"
   }
 }
