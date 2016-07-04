@@ -1,10 +1,16 @@
 
-var colors = require('colors');
+var chalk = require('chalk');
 var tto = require('terminal-table-output');
 
 var _timer = (function() {
 
     var _groups = {};
+    var _colors = [chalk.red, chalk.green, chalk.yellow, chalk.blue, chalk.magenta, chalk.cyan];
+
+    var _getColor = function() {
+        _colors.unshift(_colors.pop());
+        return _colors[0];
+    };
 
     var _outputTime = function(t) {
         switch(true) {
@@ -66,10 +72,14 @@ var _timer = (function() {
     
     var _createGroup = function(opts) {
         var _opts = opts || {};
-        var _timers = [];
+        var _timers = {};
         var _inst = {
-            get opts() {
+            get __opts() {
                 return _opts;
+            },
+
+            get __timers() {
+                return _timers;
             },
             
             // Stops all timers and
@@ -77,9 +87,22 @@ var _timer = (function() {
             flush: function() {
                 
             },
+
+            get row() {
+                return [];
+            },
             
             // Prints the group in a specific style
             print: function(type) {
+                var o = tto.create();
+
+                o.col(chalk.red(_opts.id.toLocaleUpperCase()));
+                o.line();
+                for (var key in _timers) {
+                    o.pushrow(_timers[key].row);
+                }
+                o.print(true);
+
                 // var group = _groups[groupId || "default"],
                 //     timers = group.timers,
                 //     total = 0;
@@ -102,6 +125,13 @@ var _timer = (function() {
                 // group.tto.print(true);    
             },
             
+            // Gets the total passed time
+            // for all timers, regardless if its
+            // active or not.
+            get totalTime() {
+                return 0;
+            },
+            
             // Gets a timer by id in the scope
             // of this group.
             // If no timer is in this scope
@@ -112,6 +142,8 @@ var _timer = (function() {
                 }
                 _timers[id] = _createTimer({
                     id: id,
+                    color: _getColor(),
+                    status: 'running',
                     startTime: _now(),
                     endTime: null,
                     totalTime: null
@@ -121,7 +153,9 @@ var _timer = (function() {
             
             // Stops all active timers.
             stop: function() {
-                
+                for (var key in _timers) {
+                    _timers[key].stop();
+                }
             }
         };
         return _inst;
@@ -130,21 +164,29 @@ var _timer = (function() {
     var _createTimer = function(_opts) {
         var _opts = _opts || {};
         var _inst = {
-            get opts() {
+            get __opts() {
                 return _opts;
             },
             set color(value) {
                 _opts.color = value;
                 return this;
             },
+            get color() {
+                return _opts.color;
+            },
             start: function() {
                 _opts.startTime = _now();
+                _opts.status = 'running';
                 return this;
             },
             stop: function() {
                 _opts.endTime = _now();
                 _opts.totalTime = ~(_opts.startTime - _opts.endTime).toFixed(3);
+                _opts.status = 'stopped';
                 return this;
+            },
+            get status() {
+                return _opts.status;
             },
             get time() {
                 if (_opts.endTime) {
@@ -155,10 +197,10 @@ var _timer = (function() {
                 }
             },
             get row() {
-                return [_opts.id, _outputTime(_opts.totalTime)];
+                return [_opts.id, _outputTime(_opts.totalTime), "10%"];
             },
             print: function() {
-                console.log("TIMER:", _opts.id, " -> ", _opts.totalTime, " ms");
+                console.log(_opts.color("TIMER:", _opts.id, " -> ", _opts.totalTime + " ms"));
             }
         };
         return _inst;
@@ -167,11 +209,16 @@ var _timer = (function() {
     _groups['default'] = _createGroup('default');
 
     var _inst = {
-        public_scope: {
+        __public_scope: {
             now: _now,
             groups: _groups
         },
-        
+
+        // Prints all groups
+        print: function() {
+
+        },
+
         // groups should create or get a group by a id.
         group: function(id) {
             if (_groups.hasOwnProperty(id)) {
@@ -190,39 +237,8 @@ var _timer = (function() {
         // groupId is optional, if timerId has no
         // match in any group, it will be created in
         // the default group.
-        timer: function(timerId, groupId) {
-            //console.log("startTimer:", timerId, groupId);
-
-            // There is a timer
-            // var group = _groups[groupId];
-            // if (group) {
-            //     var timers = _groups[groupId || "default"].timers;
-            //     for (var i = 0, len = timers.length; i < len; i++) {
-            //         if (timers[i].opts.id === timerId) {
-            //             return timers[i];
-            //         }
-            //     }
-            // }
-            //
-            // var timers = _groups[groupId || "default"].timers;
-            // for (var i = 0, len = timers.length; i < len; i++) {
-            //     if (timers[i].opts.id === timerId) {
-            //         return timers[i];
-            //     }
-            // }
-            //
-            // if (!_groups.hasOwnProperty(groupId)) {
-            //     _inst.createGroup(groupId);
-            // }
-            // var timer = _getTimer({
-            //     id: timerId,
-            //     startTime: _now(),
-            //     endTime: null,
-            //     totalTime: null
-            // });
-            // timer.start();
-            // _groups[groupId || "default"].timers.push(timer);
-            // return timer;
+        timer: function(timerId) {
+            return _inst.group('default').timer(timerId);
         }
     };
 
