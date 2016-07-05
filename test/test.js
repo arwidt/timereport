@@ -122,6 +122,16 @@ describe('TimeReport.js', function() {
 
     describe('Output', function() {
 
+        it('groups should have correct totalTime', function() {
+            var totaltime = tr.group('output').totalTime;
+            var timers = tr.group('output').__timers;
+            var timers_total = 0;
+            _.forEach(timers, function(t) {
+                 timers_total += t.time;
+            });
+            totaltime.should.equal(timers_total);
+        });
+
         it('should be possible to print a single timer', function() {
             var timers = tr.group('output').__timers;
             _.forEach(timers, function(t) {

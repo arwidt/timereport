@@ -1,6 +1,5 @@
 
 var chalk = require('chalk');
-var tto = require('terminal-table-output');
 
 var _timer = (function() {
 
@@ -23,18 +22,6 @@ var _timer = (function() {
             case (t >= 60000*60):
                 return "looong time!";
         }
-    };
-
-    var _outputProgress = function(id, perc, time) {
-
-        var str = " " + id + ": ";
-        str += (Array(Math.round(30*perc)).join(" ")).black.bgWhite;
-        str += " " + Math.round(perc*100) + "%";
-        str += " " +  _outputTime(time);
-
-        //(Array(Math.round(30*perc)).join(b)).black.bgWhite
-
-        console.log(str);
     };
 
     var _now = (function() {
@@ -94,42 +81,48 @@ var _timer = (function() {
             
             // Prints the group in a specific style
             print: function(type) {
-                var o = tto.create();
 
-                o.col(chalk.red(_opts.id.toLocaleUpperCase()));
-                o.line();
+                var gtime = _inst.totalTime;
+                var timers = [];
                 for (var key in _timers) {
-                    o.pushrow(_timers[key].row);
+                    timers.push(_timers[key].output);
                 }
-                o.print(true);
 
-                // var group = _groups[groupId || "default"],
-                //     timers = group.timers,
-                //     total = 0;
-                //
-                // group.tto.pushrow(["Name", "Time     ", "Percent  "])
-                //     .line();
-                //
-                // var i, len, row;
-                // for (i = 0, len = timers.length; i < len; i++) {
-                //     total += timers[i].time;
-                // }
-                // for (i = 0, len = timers.length; i < len; i++) {
-                //     row = timers[i].row;
-                //     row.push(Math.round((timers[i].time/total)*100) + " %");
-                //     group.tto.pushrow(row);
-                // }
-                // group.tto.line("-");
-                // group.tto.pushrow(["Total:", _outputTime(total), "100%"]);
-                //
-                // group.tto.print(true);    
+                timers.sort(function(a, b) {
+                    if (a.time < b.time) return 1;
+                    if (a.time > b.time) return -1;
+                    return 0;
+                });
+
+                var str = "";
+
+                str += chalk.bold.red(_opts.id);
+                str += chalk.red(" : ------------- ");
+                str += chalk.red("totalTime: " + _outputTime(gtime));
+                str += "\n";
+
+                var perc = 0,
+                    t;
+                for (var i = 0, len = timers.length; i < len; i++) {
+                    t = timers[i];
+                    perc = ~~((t.time / gtime) * 100);
+                    str += t.color(t.id + " : ");
+                    str += t.color(Array(perc).join("-")) + " " + chalk.bold(perc + "%, " + t.fancyTime);
+                    str += "\n";
+                }
+
+                console.log(str);
             },
             
             // Gets the total passed time
             // for all timers, regardless if its
             // active or not.
             get totalTime() {
-                return 0;
+                var total = 0;
+                for (var key in _timers) {
+                    total += _timers[key].time;
+                }
+                return total;
             },
             
             // Gets a timer by id in the scope
@@ -195,6 +188,14 @@ var _timer = (function() {
                     console.error("TIMER NOT STOPPED");
                     return;
                 }
+            },
+            get output() {
+                return {
+                    id: _opts.id,
+                    time: _opts.totalTime,
+                    fancyTime: _outputTime(_opts.totalTime),
+                    color: _opts.color
+                };
             },
             get row() {
                 return [_opts.id, _outputTime(_opts.totalTime), "10%"];
