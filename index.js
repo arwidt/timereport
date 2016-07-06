@@ -6,12 +6,12 @@ var _timer = (function() {
     var _groups = {};
     var _colors = [chalk.red, chalk.green, chalk.yellow, chalk.blue, chalk.magenta, chalk.cyan];
 
-    var _getColor = function() {
+    var __getColor = function() {
         _colors.unshift(_colors.pop());
         return _colors[0];
     };
 
-    var _outputTime = function(t) {
+    var __outputTime = function(t) {
         switch(true) {
             case (t < 1000):
                 return t + " ms";
@@ -24,7 +24,7 @@ var _timer = (function() {
         }
     };
 
-    var _now = (function() {
+    var __now = (function() {
         var getNanoSeconds, hrtime, loadTime;
 
         if ((typeof performance !== "undefined" && performance !== null) && performance.now) {
@@ -56,10 +56,78 @@ var _timer = (function() {
         }
 
     })();
-    
+
+    // ------------------
+    // TIMERS
+    // ------------------
+
+    var _createTimer = function(_opts) {
+        var _opts = _opts || {};
+        var _inst = {
+            get __opts() {
+                return _opts;
+            },
+            set color(value) {
+                _opts.color = value;
+                return this;
+            },
+            get color() {
+                return _opts.color;
+            },
+            start: function() {
+                _opts.startTime = __now();
+                _opts.status = 'running';
+                _opts.group.__timerStart();
+                return this;
+            },
+            stop: function() {
+                _opts.endTime = __now();
+                _opts.totalTime = ~(_opts.startTime - _opts.endTime).toFixed(3);
+                _opts.status = 'stopped';
+                _opts.group.__timerEnd();
+                return this;
+            },
+            get status() {
+                return _opts.status;
+            },
+            get time() {
+                if (_opts.endTime) {
+                    return _opts.totalTime;
+                } else {
+                    console.error("TIMER NOT STOPPED");
+                    return;
+                }
+            },
+            get output() {
+                return {
+                    id: _opts.id,
+                    time: _opts.totalTime,
+                    fancyTime: __outputTime(_opts.totalTime),
+                    color: _opts.color
+                };
+            },
+            get row() {
+                return [_opts.id, __outputTime(_opts.totalTime), "10%"];
+            },
+            print: function() {
+                console.log(_opts.color("TIMER:", _opts.id, " -> ", _opts.totalTime + " ms"));
+            }
+        };
+        return _inst;
+    };
+
+    // ------------------
+    // GROUPS
+    // ------------------
+
     var _createGroup = function(opts) {
         var _opts = opts || {};
         var _timers = {};
+
+        var _totalStart;
+        var _totalEnd;
+        var _totalTime = 0;
+
         var _inst = {
             get __opts() {
                 return _opts;
@@ -68,7 +136,26 @@ var _timer = (function() {
             get __timers() {
                 return _timers;
             },
-            
+
+            __timerStart: function() {
+                if (!_totalStart) {
+                    _totalStart = __now();
+                }
+            },
+
+            __timerEnd: function() {
+                var timerRunning = false;
+                for (var key in _timers) {
+                    if (_timers[key].state === "running") {
+                        timerRunning = true;
+                    }
+                }
+                if (!timerRunning) {
+                    _totalEnd = __now();
+                    _totalTime = ~(_totalStart - _totalEnd).toFixed(3);
+                }
+            },
+
             // Stops all timers and
             // flush all data and timers
             flush: function() {
@@ -94,11 +181,26 @@ var _timer = (function() {
                     return 0;
                 });
 
+                // Longest name
+                var nameLength = _opts.id.length;
+                for (var i = 0, len = timers.length; i < len; i++) {
+                    if (nameLength < timers[i].id.length) {
+                        nameLength = timers[i].id.length;
+                    }
+                }
+
+                var _fillStr = function(str, length) {
+                    if (str.length >= length) {
+                        return str;
+                    }
+                    return str + Array(length-str.length + 1).join(" ");
+                };
+
                 var str = "";
 
-                str += chalk.bold.red(_opts.id);
+                str += chalk.bold.red(_fillStr(_opts.id, nameLength));
                 str += chalk.red(" : ------------- ");
-                str += chalk.red("totalTime: " + _outputTime(gtime));
+                str += chalk.red("totalTime: " + __outputTime(gtime));
                 str += "\n";
 
                 var perc = 0,
@@ -106,8 +208,8 @@ var _timer = (function() {
                 for (var i = 0, len = timers.length; i < len; i++) {
                     t = timers[i];
                     perc = ~~((t.time / gtime) * 100);
-                    str += t.color(t.id + " : ");
-                    str += t.color(Array(perc).join("-")) + " " + chalk.bold(perc + "%, " + t.fancyTime);
+                    str += t.color(_fillStr(t.id, nameLength) + " : ");
+                    str += t.color(Array(~~(perc/2)).join("-")) + " " + chalk.bold(perc + "%, " + t.fancyTime);
                     str += "\n";
                 }
 
@@ -118,11 +220,7 @@ var _timer = (function() {
             // for all timers, regardless if its
             // active or not.
             get totalTime() {
-                var total = 0;
-                for (var key in _timers) {
-                    total += _timers[key].time;
-                }
-                return total;
+                return _totalTime;
             },
             
             // Gets a timer by id in the scope
@@ -133,11 +231,13 @@ var _timer = (function() {
                 if (_timers.hasOwnProperty(id)) {
                     return _timers[id];
                 }
+                _totalStart = __now();
                 _timers[id] = _createTimer({
+                    group: _inst,
                     id: id,
-                    color: _getColor(),
+                    color: __getColor(),
                     status: 'running',
-                    startTime: _now(),
+                    startTime: __now(),
                     endTime: null,
                     totalTime: null
                 });
@@ -154,64 +254,11 @@ var _timer = (function() {
         return _inst;
     };
 
-    var _createTimer = function(_opts) {
-        var _opts = _opts || {};
-        var _inst = {
-            get __opts() {
-                return _opts;
-            },
-            set color(value) {
-                _opts.color = value;
-                return this;
-            },
-            get color() {
-                return _opts.color;
-            },
-            start: function() {
-                _opts.startTime = _now();
-                _opts.status = 'running';
-                return this;
-            },
-            stop: function() {
-                _opts.endTime = _now();
-                _opts.totalTime = ~(_opts.startTime - _opts.endTime).toFixed(3);
-                _opts.status = 'stopped';
-                return this;
-            },
-            get status() {
-                return _opts.status;
-            },
-            get time() {
-                if (_opts.endTime) {
-                    return _opts.totalTime;
-                } else {
-                    console.error("TIMER NOT STOPPED");
-                    return;
-                }
-            },
-            get output() {
-                return {
-                    id: _opts.id,
-                    time: _opts.totalTime,
-                    fancyTime: _outputTime(_opts.totalTime),
-                    color: _opts.color
-                };
-            },
-            get row() {
-                return [_opts.id, _outputTime(_opts.totalTime), "10%"];
-            },
-            print: function() {
-                console.log(_opts.color("TIMER:", _opts.id, " -> ", _opts.totalTime + " ms"));
-            }
-        };
-        return _inst;
-    };
-
     _groups['default'] = _createGroup('default');
 
     var _inst = {
         __public_scope: {
-            now: _now,
+            now: __now,
             groups: _groups
         },
 
