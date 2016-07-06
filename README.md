@@ -29,7 +29,7 @@ Keep time of your tasks or code. Great for tracking what gulp/grunt tasks take t
 	
 The example above should output the following. (but with nice colors)
 
-	compiler : ------------- totalTime: 2.998 s
-	compile_sass : ----------------------------------------------------------------- 66%, 1.999 s
-	compile_js : -------------------------------- 33%, 999 ms
+	compiler     : ------------- totalTime: 2 s
+    compile_sass : ------------------------------------------------- 100%, 2 s
+    compile_js   : ------------------------ 50%, 1.001 s
 	
