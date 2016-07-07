@@ -121,29 +121,46 @@ describe('TimeReport.js', function() {
 
     describe('Output', function() {
 
-        it('totalTime should be the time from the first timer start to the last timer ends', function() {
-            var totaltime = tr.group('output').totalTime;
-            // var timers = tr.group('output').__timers;
-            // var timers_total = 0;
-            // _.forEach(timers, function(t) {
-            //      timers_total += t.time;
-            // });
-            // totaltime.should.equal(timers_total);
-        });
-
         it('should be possible to print a single timer', function() {
             var timers = tr.group('output').__timers;
             _.forEach(timers, function(t) {
                 t.print();
             });
-
         });
 
         it('should be possible to print a whole group', function() {
             tr.group('output').print();
         });
 
-        it('output names should be the same length', function() {
+    });
+
+    describe('TotalTime', function() {
+
+        it('totalTime should be calculated from the first timer starts to when the last timer stops.', function(done) {
+            var g1 = tr.group('group1');
+            g1.timer('timer1');
+
+            _.delay(function() {
+                g1.timer('timer1').stop();
+
+                g1.timer('timer2');
+
+                _.delay(function() {
+
+                    g1.timer('timer2').stop();
+
+                    var totalTime = g1.totalTime;
+
+                    totalTime.should.be.within(980, 1020);
+
+                    g1.print();
+
+                    done();
+
+                }, 500);
+
+            }, 500);
+
 
 
 
@@ -151,8 +168,8 @@ describe('TimeReport.js', function() {
 
     });
 
-    describe('TEST', function() {
-        it('should test a thing for readme', function() {
+    describe('Output', function() {
+        it('should output a test for readme file', function() {
 
 
             tr.group('compiler').timer('compile_js');

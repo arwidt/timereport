@@ -77,7 +77,6 @@ var _timer = (function() {
             start: function() {
                 _opts.startTime = __now();
                 _opts.status = 'running';
-                _opts.group.__timerStart();
                 return this;
             },
             stop: function() {
@@ -137,12 +136,6 @@ var _timer = (function() {
                 return _timers;
             },
 
-            __timerStart: function() {
-                if (!_totalStart) {
-                    _totalStart = __now();
-                }
-            },
-
             __timerEnd: function() {
                 var timerRunning = false;
                 for (var key in _timers) {
@@ -150,6 +143,7 @@ var _timer = (function() {
                         timerRunning = true;
                     }
                 }
+
                 if (!timerRunning) {
                     _totalEnd = __now();
                     _totalTime = ~(_totalStart - _totalEnd).toFixed(3);
@@ -228,10 +222,13 @@ var _timer = (function() {
             // If no timer is in this scope
             // one will be created.
             timer: function(id) {
+                if (!_totalStart) {
+                    _totalStart = __now();
+                }
+
                 if (_timers.hasOwnProperty(id)) {
                     return _timers[id];
                 }
-                _totalStart = __now();
                 _timers[id] = _createTimer({
                     group: _inst,
                     id: id,
