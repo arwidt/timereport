@@ -209,7 +209,7 @@ var _timer = (function() {
                     t = timers[i];
                     perc = ~~((t.time / gtime) * 100);
                     str += t.color(_fillStr(t.id, nameLength) + " : ");
-                    str += t.color(Array(~~(perc/2)).join("-")) + " " + chalk.bold(perc + "%, " + t.fancyTime);
+                    str += t.color(Array(~~(Math.max(0, perc/2))).join("-")) + " " + chalk.bold(perc + "%, " + t.fancyTime);
                     str += "\n";
                 }
 
