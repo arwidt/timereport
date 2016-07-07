@@ -80,10 +80,12 @@ var _timer = (function() {
                 return this;
             },
             stop: function() {
-                _opts.endTime = __now();
-                _opts.totalTime = ~(_opts.startTime - _opts.endTime).toFixed(3);
-                _opts.status = 'stopped';
-                _opts.group.__timerEnd();
+                if (_opts.status == 'running') {
+                    _opts.endTime = __now();
+                    _opts.totalTime = ~(_opts.startTime - _opts.endTime).toFixed(3);
+                    _opts.status = 'stopped';
+                    _opts.group.__timerEnd();
+                }
                 return this;
             },
             get status() {
