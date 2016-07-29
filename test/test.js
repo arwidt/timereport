@@ -161,8 +161,40 @@ describe('TimeReport.js', function() {
 
             }, 500);
 
+        });
+    });
 
+    describe('Timeline', function() {
 
+        it('should be possible to print a timeline instead of a timer overview', function(done) {
+
+            this.timeout(3000);
+
+            var tg1 = tr.group('timeline');
+            tg1.timer('timer1');
+            _.delay(function() {
+                tg1.timer('timer2');
+            }, 500);
+
+            _.delay(function() {
+                tg1.timer('timer3');
+            }, 1000);
+
+            _.delay(function() {
+                tg1.timer('timer1').stop();
+            }, 1500);
+
+            _.delay(function() {
+                tg1.timer('timer2').stop();
+            }, 2000);
+
+            _.delay(function() {
+                tg1.timer('timer3').stop();
+
+                tg1.print('timeline');
+
+                done();
+            }, 2500);
 
         });
 
@@ -170,7 +202,6 @@ describe('TimeReport.js', function() {
 
     describe('Output', function() {
         it('should output a test for readme file', function() {
-
 
             tr.group('compiler').timer('compile_js');
             tr.group('compiler').timer('compile_sass');
