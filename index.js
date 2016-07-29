@@ -1,5 +1,6 @@
 
 var chalk = require('chalk');
+var timeprints = require('./timeprints.js');
 
 var _timer = (function() {
 
@@ -9,19 +10,6 @@ var _timer = (function() {
     var __getColor = function() {
         _colors.unshift(_colors.pop());
         return _colors[0];
-    };
-
-    var __outputTime = function(t) {
-        switch(true) {
-            case (t < 1000):
-                return t + " ms";
-            case (t > 1000 && t < 60000):
-                return t/1000 + " s";
-            case (t > 60000 && t < 60000*60):
-                return ~~(t/60000) + " m" + " and " + t%60000/1000 + " s";
-            case (t >= 60000*60):
-                return "looong time!";
-        }
     };
 
     var __now = (function() {
@@ -102,13 +90,14 @@ var _timer = (function() {
             get output() {
                 return {
                     id: _opts.id,
-                    time: _opts.totalTime,
-                    fancyTime: __outputTime(_opts.totalTime),
+                    startTime: ~~(_opts.startTime - _opts.group.startTime),
+                    totalTime: _opts.totalTime,
+                    fancyTime: timeprints.outputTime(_opts.totalTime),
                     color: _opts.color
                 };
             },
             get row() {
-                return [_opts.id, __outputTime(_opts.totalTime), "10%"];
+                return [_opts.id, timeprints.outputTime(_opts.totalTime), "10%"];
             },
             print: function() {
                 console.log(_opts.color("TIMER:", _opts.id, " -> ", _opts.totalTime + " ms"));
@@ -165,51 +154,23 @@ var _timer = (function() {
             // Prints the group in a specific style
             print: function(type) {
 
-                var gtime = _inst.totalTime;
-                var timers = [];
-                for (var key in _timers) {
-                    timers.push(_timers[key].output);
+                var printer;
+                switch(type) {
+                    case "timeline":
+                        printer = require('./print_timeline.js');
+                        break;
+                    default:
+                        printer = require('./print_default.js');
+                        break;
                 }
 
-                timers.sort(function(a, b) {
-                    if (a.time < b.time) return 1;
-                    if (a.time > b.time) return -1;
-                    return 0;
-                });
+                printer(_inst)
+            },
 
-                // Longest name
-                var nameLength = _opts.id.length;
-                for (var i = 0, len = timers.length; i < len; i++) {
-                    if (nameLength < timers[i].id.length) {
-                        nameLength = timers[i].id.length;
-                    }
-                }
-
-                var _fillStr = function(str, length) {
-                    if (str.length >= length) {
-                        return str;
-                    }
-                    return str + Array(length-str.length + 1).join(" ");
-                };
-
-                var str = "";
-
-                str += chalk.bold.red(_fillStr(_opts.id, nameLength));
-                str += chalk.red(" : ------------- ");
-                str += chalk.red("totalTime: " + __outputTime(gtime));
-                str += "\n";
-
-                var perc = 0,
-                    t;
-                for (var i = 0, len = timers.length; i < len; i++) {
-                    t = timers[i];
-                    perc = ~~((t.time / gtime) * 100);
-                    str += t.color(_fillStr(t.id, nameLength) + " : ");
-                    str += t.color(Array(~~(Math.max(0, perc/2))).join("-")) + " " + chalk.bold(perc + "%, " + t.fancyTime);
-                    str += "\n";
-                }
-
-                console.log(str);
+            // To create the timeline
+            // we need the totalStart time
+            get startTime() {
+                return _totalStart;
             },
             
             // Gets the total passed time
