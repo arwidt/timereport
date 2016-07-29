@@ -174,6 +174,11 @@ describe('TimeReport.js', function() {
             tg1.timer('timer1');
             _.delay(function() {
                 tg1.timer('timer2');
+
+                tg1.timer('short');
+                _.defer(function() {
+                    tg1.timer('short').stop();
+                });
             }, 500);
 
             _.delay(function() {

@@ -57,8 +57,12 @@ module.exports = function(group) {
         progress[~~(((timers[i].startTime+timers[i].totalTime)/groupTime) * progress.length)] = "X";
 
         progress = progress.join("").split("X");
-        progress[1] = t.color("-" + progress[1].replace(/_/g, "-") + "-");
-        progress = progress.join("");
+        if (progress.length > 2) {
+            progress[1] = t.color("-" + progress[1].replace(/_/g, "-") + "-");
+            progress = progress.join("");
+        } else if (progress.length < 3) {
+            progress = progress.join(t.color("-"));
+        }
 
         perc = ~~((t.totalTime / groupTime) * 100);
         str += t.color(_fillStr(t.id, nameLength) + " : ");
