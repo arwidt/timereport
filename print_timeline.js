@@ -57,7 +57,7 @@ module.exports = function(group) {
         progress[~~(((timers[i].startTime+timers[i].totalTime)/groupTime) * progress.length)] = "X";
 
         progress = progress.join("").split("X");
-        progress[1] = chalk.bold(t.color("-" + progress[1].replace(/_/g, "-") + "-"));
+        progress[1] = t.color("-" + progress[1].replace(/_/g, "-") + "-");
         progress = progress.join("");
 
         perc = ~~((t.totalTime / groupTime) * 100);
