@@ -69,7 +69,7 @@ module.exports = function(group) {
 
         str += progress;
 
-        str += t.color(" " + chalk.bold(perc + "%, " + t.fancyTime));
+        str += t.color(" " + perc + "%, " + t.fancyTime);
 
         str += "\n";
     }
