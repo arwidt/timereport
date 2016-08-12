@@ -213,15 +213,25 @@ describe('TimeReport.js', function() {
 
             setTimeout(function() {
                 tr.group('compiler').timer('compile_js').stop();
+
+                tr.group('compiler').timer('upload_js');
+                setTimeout(function() {
+                    tr.group('compiler').timer('upload_js').stop();
+                }, 100);
             }, 1000);
 
             setTimeout(function() {
                 tr.group('compiler').timer('compile_sass').stop();
-            }, 2000);
 
-            setTimeout(function() {
-                tr.group('compiler').print();
-            }, 2001);
+                tr.group('compiler').timer('wrap_things_up');
+                setTimeout(function() {
+                    tr.group('compiler').timer('wrap_things_up').stop();
+
+                    tr.group('compiler').print();
+                    tr.group('compiler').print('timeline');
+                }, 100);
+
+            }, 2000);
 
         });
     });
