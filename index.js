@@ -149,6 +149,9 @@ var _timer = (function() {
                     delete _timers[key];
                 }
                 _timers = {};
+                _totalStart = undefined;
+                _totalEnd = undefined;
+                _totalTime = 0;
             },
 
             get row() {

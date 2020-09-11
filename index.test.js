@@ -45,9 +45,12 @@ describe('TimeReport.js', function() {
             group.timer('g1_flush_t1');
             
             _.delay(() => {
+                expect(tr.__public_scope.groups['g1_flush'].startTime).toBeDefined();
+
                 group.flush();
                 
                 expect(tr.__public_scope.groups['g1_flush'].__timers).not.toHaveProperty('g1_flush_t1');
+                expect(tr.__public_scope.groups['g1_flush'].startTime).not.toBeDefined();
                 
                 group.timer('g1_flush_t1');
 
@@ -57,6 +60,7 @@ describe('TimeReport.js', function() {
 
                     expect(tr.__public_scope.groups['g1_flush'].__timers).toHaveProperty('g1_flush_t1');
                     expect(tr.__public_scope.groups['g1_flush'].__timers['g1_flush_t1'].status).toBe('stopped');
+                    expect(tr.__public_scope.groups['g1_flush'].startTime).toBeDefined();
 
                     done();
 
