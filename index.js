@@ -144,7 +144,11 @@ var _timer = (function() {
             // Stops all timers and
             // flush all data and timers
             flush: function() {
-                
+                for (var key in _timers) {
+                    _timers[key].stop();
+                    delete _timers[key];
+                }
+                _timers = {};
             },
 
             get row() {

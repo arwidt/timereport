@@ -1,8 +1,8 @@
 "use strict";
 
-var tr = require('../index.js');
-var should = require('should');
+var tr = require('./index.js');
 var _ = require('lodash');
+const print_default = require('./print_default.js');
 
 describe('TimeReport.js', function() {
 
@@ -16,7 +16,7 @@ describe('TimeReport.js', function() {
                 if (_t > 990 && _t < 1010) {
                     _t = 1000;
                 }
-                should(_t).equal(1000);
+                expect(_t).toBe(1000);
                 done();
             }, 1000);
 
@@ -27,17 +27,41 @@ describe('TimeReport.js', function() {
     describe('Groups', function() {
 
         it('should have a default group setup from start named default', function() {
-            should.exist(tr.__public_scope.groups['default']);
+            expect(tr.__public_scope.groups['default']).toBeDefined();
         });
 
         it('should create a group if no group with that id is created before', function() {
             var group = tr.group('g1');
-            group.should.have.ownProperty('__opts');
-            group.__opts.id.should.equal('g1');
+            expect(group).toHaveProperty('__opts');
+            expect(group.__opts.id).toBe('g1');
         });
 
         it('should return the group if a group with that id is created before', function() {
-            tr.group('g1').should.equal(tr.__public_scope.groups['g1']);
+            expect(tr.group('g1')).toBe(tr.__public_scope.groups['g1']);
+        });
+
+        it('should be possible to flush a group to reset all timers', function(done) {
+            var group = tr.group('g1_flush');
+            group.timer('g1_flush_t1');
+            
+            _.delay(() => {
+                group.flush();
+                
+                expect(tr.__public_scope.groups['g1_flush'].__timers).not.toHaveProperty('g1_flush_t1');
+                
+                group.timer('g1_flush_t1');
+
+                _.delay(() => {
+
+                    group.timer('g1_flush_t1').stop();
+
+                    expect(tr.__public_scope.groups['g1_flush'].__timers).toHaveProperty('g1_flush_t1');
+                    expect(tr.__public_scope.groups['g1_flush'].__timers['g1_flush_t1'].status).toBe('stopped');
+
+                    done();
+
+                }, 500);
+            }, 500);
         });
 
     });
@@ -46,7 +70,7 @@ describe('TimeReport.js', function() {
 
         it ('groups should have timer function', function() {
             var group = tr.group('g1');
-            group.should.have.hasOwnProperty('timer');
+            expect(group).toHaveProperty('timer');
         });
 
         it('when calling timer on a group, with a undefined timer id, it should start a timer', function(done) {
@@ -57,34 +81,34 @@ describe('TimeReport.js', function() {
                 if (t < 1010 && t > 990) {
                     t = 1000;
                 }
-                t.should.equal(1000);
+                expect(t).toBe(1000);
                 done();
             }, 1000);
         });
         
         it('when fetching a already created timer it should not start', function() {
             var t1 = tr.group('g1').timer('t1');
-            t1.status.should.equal('stopped');
+            expect(t1.status).toBe('stopped');
         });
 
         it('when calling timer func directly without group, timer should be placed in default group', function() {
             var d_t1 = tr.timer('d_t1');
-            d_t1.should.equal(tr.__public_scope.groups['default'].__timers['d_t1']);
+            expect(d_t1).toBe(tr.__public_scope.groups['default'].__timers['d_t1']);
         });
 
         it('when calling timer with started id, it should return the timer object', function() {
             var dt_1 = tr.timer('d_t1');
-            dt_1.should.equal(tr.__public_scope.groups['default'].__timers['d_t1']);
+            expect(dt_1).toBe(tr.__public_scope.groups['default'].__timers['d_t1']);
         });
 
         it('should be possible to start a timer inside a group', function() {
             var g1_t1 = tr.group('g1').timer('g1_t1');
-            g1_t1.should.equal(tr.__public_scope.groups['g1'].__timers['g1_t1']);
+            expect(g1_t1).toBe(tr.__public_scope.groups['g1'].__timers['g1_t1']);
         });
 
         it('should be possible to access a started timer from a group', function() {
             var g1_t1 = tr.group('g1').timer('g1_t1');
-            g1_t1.should.equal(tr.__public_scope.groups['g1'].__timers['g1_t1']);
+            expect(g1_t1).toBe(tr.__public_scope.groups['g1'].__timers['g1_t1']);
         });
 
         it('group.stop(), should stop all timers in a group', function() {
@@ -92,7 +116,7 @@ describe('TimeReport.js', function() {
             g1.stop();
 
             _.forEach(g1.__timers, function(timer) {
-                timer.status.should.equal('stopped');
+                expect(timer.status).toBe('stopped');
             });
         });
 
@@ -151,7 +175,8 @@ describe('TimeReport.js', function() {
 
                     var totalTime = g1.totalTime;
 
-                    totalTime.should.be.within(980, 1020);
+                    expect(totalTime).toBeGreaterThan(990);
+                    expect(totalTime).toBeLessThan(1010);
 
                     g1.print();
 
@@ -168,7 +193,7 @@ describe('TimeReport.js', function() {
 
         it('should be possible to print a timeline instead of a timer overview', function(done) {
 
-            this.timeout(3000);
+            // this.timeout(3000);
 
             var tg1 = tr.group('timeline');
             tg1.timer('timer1');
