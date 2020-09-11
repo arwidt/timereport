@@ -1,10 +1,10 @@
 {
   "name": "timereport",
-  "version": "1.3.5",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -w test/test.js"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -27,9 +27,8 @@
   },
   "homepage": "https://github.com/arwidt/timereport#readme",
   "devDependencies": {
-    "lodash": "^4.13.1",
-    "mocha": "^2.5.3",
-    "should": "^9.0.2"
+    "jest": "^26.4.2",
+    "lodash": "^4.13.1"
   },
   "dependencies": {
     "chalk": "^1.1.3"

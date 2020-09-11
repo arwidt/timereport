@@ -55,4 +55,6 @@ Timeline print
     upload_js      : __________________________________-----__________________________________ 4%, 102 ms
     wrap_things_up : _____________________________________________________________________---- 4%, 104 ms
 	
+## Contribute
 
+The project uses Jest for testing, clone project and run `npm i; npm test` or `jest` if you have installed globally.
