@@ -1,6 +1,6 @@
 {
   "name": "@arwidt/timereport",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Time our code and print out a graph to pinpoint where to optimize",
   "type": "module",
   "main": "index.js",
