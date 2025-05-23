@@ -1,6 +1,8 @@
 
-var chalk = require('chalk');
-var timeprints = require('./timeprints.js');
+import chalk from 'chalk';
+import timeprints from './timeprints.js';
+import printerDefault from './print_default.js';
+import printerTimeline from './print_timeline.js';
 
 var _timer = (function() {
 
@@ -161,17 +163,17 @@ var _timer = (function() {
             // Prints the group in a specific style
             print: function(type) {
 
-                var printer;
+                let printer;
                 switch(type) {
                     case "timeline":
-                        printer = require('./print_timeline.js');
+                        printer = printerTimeline;
                         break;
                     default:
-                        printer = require('./print_default.js');
+                        printer = printerDefault;
                         break;
                 }
 
-                printer(_inst)
+                printer(_inst);
             },
 
             // To create the timeline
@@ -262,4 +264,4 @@ var _timer = (function() {
 
 })();
 
-module.exports = _timer;
+export default _timer;

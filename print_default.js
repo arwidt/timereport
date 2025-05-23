@@ -1,9 +1,9 @@
-module.exports = function(group) {
-    "use strict";
+// "use strict"; // Not needed in ES modules
 
-    var timeprints = require('./timeprints.js');
-    var chalk = require('chalk');
+import timeprints from './timeprints.js';
+import chalk from 'chalk';
 
+export default function(group) {
     var groupTime = group.totalTime;
     var timers = [];
     for (var key in group.__timers) {
