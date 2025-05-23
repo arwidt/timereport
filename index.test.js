@@ -1,8 +1,8 @@
-"use strict";
+import tr from './index.js';
+import _ from 'lodash';
 
-var tr = require('./index.js');
-var _ = require('lodash');
-const print_default = require('./print_default.js');
+// print_default is not directly used, it's used via tr.group().print()
+// const print_default = require('./print_default.js'); 
 
 describe('TimeReport.js', function() {
 
