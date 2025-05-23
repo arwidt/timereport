@@ -2,7 +2,7 @@ import tr from './index.js';
 import _ from 'lodash';
 
 // print_default is not directly used, it's used via tr.group().print()
-// const print_default = require('./print_default.js'); 
+// const print_default = require('./print_default.js');
 
 describe('TimeReport.js', function() {
 
@@ -43,15 +43,15 @@ describe('TimeReport.js', function() {
         it('should be possible to flush a group to reset all timers', function(done) {
             var group = tr.group('g1_flush');
             group.timer('g1_flush_t1');
-            
+
             _.delay(() => {
                 expect(tr.__public_scope.groups['g1_flush'].startTime).toBeDefined();
 
                 group.flush();
-                
+
                 expect(tr.__public_scope.groups['g1_flush'].__timers).not.toHaveProperty('g1_flush_t1');
                 expect(tr.__public_scope.groups['g1_flush'].startTime).not.toBeDefined();
-                
+
                 group.timer('g1_flush_t1');
 
                 _.delay(() => {
@@ -89,7 +89,7 @@ describe('TimeReport.js', function() {
                 done();
             }, 1000);
         });
-        
+
         it('when fetching a already created timer it should not start', function() {
             var t1 = tr.group('g1').timer('t1');
             expect(t1.status).toBe('stopped');
@@ -235,7 +235,7 @@ describe('TimeReport.js', function() {
     });
 
     describe('Output', function() {
-        it('should output a test for readme file', function() {
+        it('should output a test for readme file', function(done) {
 
             tr.group('compiler').timer('compile_js');
             tr.group('compiler').timer('compile_sass');
@@ -258,6 +258,8 @@ describe('TimeReport.js', function() {
 
                     tr.group('compiler').print();
                     tr.group('compiler').print('timeline');
+
+                    done();
                 }, 100);
 
             }, 2000);
